@@ -1,14 +1,21 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
+import { NuxtLink } from "#components";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@iconify/vue";
+import { useColorMode } from "@vueuse/core";
 
 const isMenuOpen = ref(false);
+let colorMode = useColorMode();
+const toggleTheme = () => {
+  colorMode.value = colorMode.value === "dark" ? "light" : "dark";
+};
 </script>
 
 <template>
-  <header class="flex justify-between items-center px-6 py-3 border-b bg-white shadow-sm rounded-b-lg">
+  <header class="flex justify-between items-center px-6 py-3 border-b shadow-sm">
     <!-- Logo -->
     <div class="flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-black" viewBox="0 0 24 24">
@@ -17,42 +24,50 @@ const isMenuOpen = ref(false);
       <span class="font-bold text-lg">LoanCompare</span>
     </div>
 
-    <!-- Desktop Nav -->
+    <!-- Desktop Navigation -->
     <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
       <NuxtLink to="/" exact-active-class="text-primary">Home</NuxtLink>
       <NuxtLink to="/calculator" active-class="text-primary">Calculators</NuxtLink>
       <NuxtLink to="/comparison" active-class="text-primary">Comparison</NuxtLink>
     </nav>
 
-    <!-- User dropdown -->
-    <div class="hidden md:block">
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button variant="ghost" class="flex items-center gap-2 px-2">
-            <Avatar class="w-8 h-8">
-              <AvatarImage src="https://randomuser.me/api/portraits/women/44.jpg" />
-              <AvatarFallback>AK</AvatarFallback>
-            </Avatar>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Logout</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+    <div class="flex">
+      <Button variant="outline" @click="toggleTheme" class="relative mr-4">
+        <Icon icon="radix-icons:moon" class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+        <Icon icon="radix-icons:sun" class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        <span class="sr-only">Toggle theme</span>
+      </Button>
+
+      <!-- User Menu (Desktop) -->
+      <div class="hidden md:block">
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="ghost" class="p-0 rounded-full">
+              <Avatar class="w-8 h-8">
+                <AvatarImage src="https://randomuser.me/api/portraits/women/44.jpg" />
+                <AvatarFallback>AK</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>Profile</DropdownMenuItem>
+            <DropdownMenuItem>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
 
-    <!-- Mobile Hamburger -->
+    <!-- Hamburger (Mobile) -->
     <div class="md:hidden">
-      <button @click="isMenuOpen = !isMenuOpen" class="focus:outline-none">
+      <Button variant="ghost" class="p-2" @click="isMenuOpen = !isMenuOpen">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
-      </button>
+      </Button>
     </div>
   </header>
 
-  <!-- Mobile Menu -->
+  <!-- Mobile Navigation -->
   <div v-if="isMenuOpen" class="md:hidden px-6 pb-4">
     <nav class="flex flex-col gap-2 text-sm font-medium">
       <NuxtLink to="/" exact-active-class="text-primary">Home</NuxtLink>
