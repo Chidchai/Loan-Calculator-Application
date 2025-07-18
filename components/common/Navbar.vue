@@ -25,39 +25,56 @@ const toggleTheme = () => {
     </div>
 
     <!-- Desktop Navigation -->
-    <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
-      <NuxtLink to="/" exact-active-class="text-primary">Home</NuxtLink>
-      <NuxtLink to="/calculator" active-class="text-primary">Calculators</NuxtLink>
-      <NuxtLink to="/comparison" active-class="text-primary">Comparison</NuxtLink>
+    <nav class="hidden md:flex items-center gap-6 text-sm font-medium relative">
+      <NuxtLink
+        to="/"
+        class="relative pb-2 font-medium"
+        exact-active-class="text-primary after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-red-500 after:rounded-full after:transition-all after:duration-300"
+      >
+        Home
+      </NuxtLink>
+      <NuxtLink
+        to="/calculator"
+        class="relative pb-2 font-medium"
+        active-class="text-primary after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-red-500 after:rounded-full after:transition-all after:duration-300"
+      >
+        Calculators
+      </NuxtLink>
+      <NuxtLink
+        to="/comparison"
+        class="relative pb-2 font-medium"
+        active-class="text-primary after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-red-500 after:rounded-full after:transition-all after:duration-300"
+      >
+        Comparison
+      </NuxtLink>
     </nav>
 
-    <div class="flex">
+    <!-- Theme + Avatar -->
+    <div class="flex items-center">
       <Button variant="outline" @click="toggleTheme" class="relative mr-4">
         <Icon icon="radix-icons:moon" class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
         <Icon icon="radix-icons:sun" class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         <span class="sr-only">Toggle theme</span>
       </Button>
 
-      <!-- User Menu (Desktop) -->
-      <div class="hidden md:block">
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="ghost" class="p-0 rounded-full">
-              <Avatar class="w-8 h-8">
-                <AvatarImage src="https://randomuser.me/api/portraits/women/44.jpg" />
-                <AvatarFallback>AK</AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Logout</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <!-- User Avatar -->
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <Button variant="ghost" class="p-0 rounded-full">
+            <Avatar class="w-8 h-8">
+              <AvatarImage src="https://randomuser.me/api/portraits/women/44.jpg" />
+              <AvatarFallback>AK</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem>Profile</DropdownMenuItem>
+          <DropdownMenuItem>Logout</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
 
-    <!-- Hamburger (Mobile) -->
+    <!-- Hamburger for Mobile -->
     <div class="md:hidden">
       <Button variant="ghost" class="p-2" @click="isMenuOpen = !isMenuOpen">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,9 +87,28 @@ const toggleTheme = () => {
   <!-- Mobile Navigation -->
   <div v-if="isMenuOpen" class="md:hidden px-6 pb-4">
     <nav class="flex flex-col gap-2 text-sm font-medium">
-      <NuxtLink to="/" exact-active-class="text-primary">Home</NuxtLink>
-      <NuxtLink to="/calculator" active-class="text-primary">Calculators</NuxtLink>
-      <NuxtLink to="/comparison" active-class="text-primary">Comparison</NuxtLink>
+      <NuxtLink
+        to="/"
+        class="relative pb-2"
+        exact-active-class="text-primary after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-red-500 after:rounded-full"
+      >
+        Home
+      </NuxtLink>
+      <NuxtLink
+        to="/calculator"
+        class="relative pb-2"
+        active-class="text-primary after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-red-500 after:rounded-full"
+      >
+        Calculators
+      </NuxtLink>
+      <NuxtLink
+        to="/comparison"
+        class="relative pb-2"
+        active-class="text-primary after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-full after:bg-red-500 after:rounded-full"
+      >
+        Comparison
+      </NuxtLink>
+
       <div class="mt-2">
         <DropdownMenu>
           <DropdownMenuTrigger as-child>

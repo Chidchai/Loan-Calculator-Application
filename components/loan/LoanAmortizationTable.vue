@@ -1,46 +1,62 @@
 <template>
-  <div class="mt-10 space-y-4">
-    <h3 class="text-lg font-semibold">ตารางแสดงรายละเอียดการผ่อนชำระ (Amortization Schedule)</h3>
-
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm text-left border rounded-md">
-        <thead class="bg-gray-100 dark:bg-gray-800">
-          <tr>
-            <th class="p-2">งวดที่</th>
-            <th class="p-2">วันที่ชำระ</th>
-            <th class="p-2">ยอดเงินต้นคงเหลือต้นงวด</th>
-            <th class="p-2">ยอดผ่อนต่อเดือน</th>
-            <th class="p-2">เงินต้น</th>
-            <th class="p-2">ดอกเบี้ย</th>
-            <th class="p-2">ยอดเงินต้นคงเหลือปลายงวด</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, index) in schedule" :key="index" class="border-t">
-            <td class="p-2">{{ item.month }}</td>
-            <td class="p-2">{{ item.paymentDate }}</td>
-            <td class="p-2">฿ {{ format(item.startingBalance) }}</td>
-            <td class="p-2">฿ {{ format(item.payment) }}</td>
-            <td class="p-2">฿ {{ format(item.principal) }}</td>
-            <td class="p-2">฿ {{ format(item.interest) }}</td>
-            <td class="p-2">฿ {{ format(item.endingBalance) }}</td>
-          </tr>
-        </tbody>
-      </table>
+  <div class="space-y-4">
+    <div class="overflow-x-auto rounded-xl border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>งวดที่</TableHead>
+            <TableHead>วันที่ชำระ</TableHead>
+            <TableHead>ยอดต้นคงเหลือต้นงวด</TableHead>
+            <TableHead>ยอดผ่อน</TableHead>
+            <TableHead>เงินต้น</TableHead>
+            <TableHead>ดอกเบี้ย</TableHead>
+            <TableHead>ยอดคงเหลือปลายงวด</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow v-for="item in paginatedData" :key="item.month">
+            <TableCell>{{ item.month }}</TableCell>
+            <TableCell>{{ item.paymentDate }}</TableCell>
+            <TableCell>฿{{ item.startingBalance.toLocaleString() }}</TableCell>
+            <TableCell>฿{{ item.payment.toLocaleString() }}</TableCell>
+            <TableCell>฿{{ item.principal.toLocaleString() }}</TableCell>
+            <TableCell>฿{{ item.interest.toLocaleString() }}</TableCell>
+            <TableCell>฿{{ item.endingBalance.toLocaleString() }}</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     </div>
 
-    <div class="flex justify-end gap-2 pt-4">
-      <Button @click="exportToPDF">ส่งออก PDF</Button>
-      <button @click="exportToExcel" class="px-4 py-2 text-sm rounded-md bg-blue-500 text-white">ส่งออก Excel</button>
-    </div>
+    <Pagination v-slot="{ page }" :total="totalItems" :items-per-page="itemsPerPage" :default-page="1" @update:page="(val) => (currentPage = val)">
+      <PaginationContent v-slot="{ items }">
+        <PaginationPrevious :disabled="currentPage === 1" />
+
+        <template v-for="(item, index) in items" :key="index">
+          <PaginationItem v-if="item.type === 'page'" :value="item.value" :is-active="item.value === page" @click="currentPage = item.value">
+            {{ item.value }}
+          </PaginationItem>
+        </template>
+
+        <PaginationEllipsis v-if="currentPage < totalPages - 2" />
+
+        <PaginationNext :disabled="currentPage === totalPages" />
+      </PaginationContent>
+    </Pagination>
+  </div>
+  <div class="flex justify-end gap-2 pt-4">
+    <Button @click="exportToPDF">ส่งออก PDF</Button>
+    <button @click="exportToExcel" class="px-4 py-2 text-sm rounded-md bg-blue-500 text-white">ส่งออก Excel</button>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Ref } from "vue";
+import { ref, computed } from "vue";
 import { Button } from "@/components/ui/button";
+import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table";
+import { Pagination, PaginationNext, PaginationContent, PaginationPrevious, PaginationEllipsis, PaginationItem } from "@/components/ui/pagination";
+// import jsPDF from "jspdf";
+// import autoTable from "jspdf-autotable";
 
-// รับข้อมูลผ่าน props
 const props = defineProps<{
   schedule: {
     month: number;
@@ -53,62 +69,44 @@ const props = defineProps<{
   }[];
 }>();
 
-function format(value: number): string {
-  return value.toLocaleString("th-TH", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
+const itemsPerPage = 10;
+const currentPage = ref(1);
 
-// async function exportToPDF() {
-//   const { jsPDF } = await import("jspdf");
-//   const autoTable = (await import("jspdf-autotable")).default;
-//   const { registerThaiFont } = await import("@/utils/font-thsarabun-base64");
+const totalItems = computed(() => props.schedule?.length || 0);
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage));
 
-//   const doc = new jsPDF({
-//     unit: "pt",
-//     format: "a4",
-//     orientation: "portrait",
-//   });
+const paginatedData = computed(() => {
+  const schedule = props.schedule ?? [];
+  const start = (currentPage.value - 1) * itemsPerPage;
+  return schedule.slice(start, start + itemsPerPage);
+});
 
-//   registerThaiFont(doc);
-//   doc.setFont("THSarabunNew");
-//   doc.setFontSize(16);
-//   doc.text("ตารางแสดงรายละเอียดการผ่อนชำระ", 40, 40);
+watch(totalPages, (newTotal) => {
+  if (currentPage.value > newTotal) {
+    currentPage.value = Math.max(1, newTotal);
+  }
+});
 
-//   autoTable(doc, {
-//     startY: 60,
-//     head: [["งวดที่", "วันที่ชำระ", "ยอดเงินต้นคงเหลือต้นงวด", "ยอดผ่อนต่อเดือน", "เงินต้น", "ดอกเบี้ย", "ยอดเงินต้นคงเหลือปลายงวด"]],
-//     body: props.schedule.map((item) => [item.month, item.paymentDate, `฿ ${format(item.startingBalance)}`, `฿ ${format(item.payment)}`, `฿ ${format(item.principal)}`, `฿ ${format(item.interest)}`, `฿ ${format(item.endingBalance)}`]),
-//     styles: {
-//       font: "THSarabunNew",
-//       fontSize: 12,
-//     },
-//     headStyles: {
-//       font: "THSarabunNew",
-//       fontStyle: "bold",
-//       fillColor: [41, 128, 185],
-//       textColor: 255,
-//     },
-//     didDrawPage: (data) => {
-//       // กำหนด Header เอง
-//       doc.setFont("THSarabunNew");
-//       doc.setFontSize(16);
-//       doc.text("รายงานตารางผ่อนชำระ", data.settings.margin.left, 40);
+const exportToPDF = () => {
+  // const doc = new jsPDF();
+  // doc.text("Loan Amortization Schedule", 10, 10);
+  // autoTable(doc, {
+  //   startY: 20,
+  //   head: [["No.", "Payment Date", "Beginning Balance", "Payment", "Principal", "Interest", "Ending Balance"]],
+  //   body: props.schedule.map((item) => [
+  //     item.month,
+  //     item.paymentDate,
+  //     item.startingBalance.toLocaleString(),
+  //     item.payment.toLocaleString(),
+  //     item.principal.toLocaleString(),
+  //     item.interest.toLocaleString(),
+  //     item.endingBalance.toLocaleString(),
+  //   ]),
+  //   styles: { fontSize: 10 },
+  // });
+  // doc.save("Loan-Amortization-Schedule.pdf");
+};
 
-//       // ใส่เลขหน้า
-//       const pageSize = doc.internal.pageSize;
-//       const pageHeight = pageSize.height || pageSize.getHeight();
-//       doc.setFontSize(10);
-//     },
-//   });
-
-//   doc.save("ตารางผ่อนชำระ.pdf");
-// }
-
-function exportToPDF() {
-  window.open("/api/export-pdf", "_blank");
-}
 async function exportToExcel() {
   const XLSX = await import("xlsx");
 

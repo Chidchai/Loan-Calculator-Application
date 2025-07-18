@@ -1,59 +1,106 @@
 <script setup lang="ts">
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
-type LoanFieldKey = "interestRate" | "term" | "monthlyPayment" | "totalInterest" | "type" | "highlight";
-
-interface Loan {
-  name: string;
-  interestRate: string;
-  term: string;
-  monthlyPayment: string;
-  totalInterest: string;
-  type: string;
-  highlight: string;
-}
 const props = defineProps<{
-  loans: Loan[];
+  loans: {
+    id: number;
+    form: {
+      amount: number;
+      interestRate: number;
+      termYears: number;
+      termMonths: number;
+      monthlyPayment: number;
+      totalInterest: number;
+      totalPayment: number;
+    };
+  }[];
 }>();
 
-const fields: { label: string; key: LoanFieldKey }[] = [
-  { label: "Interest Rate", key: "interestRate" },
-  { label: "Loan Term", key: "term" },
-  { label: "Monthly Payment", key: "monthlyPayment" },
-  { label: "Total Interest Paid", key: "totalInterest" },
-  { label: "Loan Type", key: "type" },
-  { label: "Highlights", key: "highlight" },
-];
+// ค่าต่ำสุด / สูงสุด
+const minRate = computed(() => Math.min(...props.loans.map((l) => l.form.interestRate)));
+const maxRate = computed(() => Math.max(...props.loans.map((l) => l.form.interestRate)));
+
+const minMonthly = computed(() => Math.min(...props.loans.map((l) => l.form.monthlyPayment)));
+const maxMonthly = computed(() => Math.max(...props.loans.map((l) => l.form.monthlyPayment)));
+
+const minTotalPayment = computed(() => Math.min(...props.loans.map((l) => l.form.totalPayment)));
+const maxTotalPayment = computed(() => Math.max(...props.loans.map((l) => l.form.totalPayment)));
+
+function getHighlightClass(value: number, min: number, max: number) {
+  if (Math.abs(value - min) < 0.01) return "text-green-600 font-bold";
+  if (Math.abs(value - max) < 0.01) return "text-red-600 font-bold";
+  return "";
+}
 </script>
 
 <template>
-  <Card>
-    <CardContent class="p-6">
-      <h2 class="text-2xl font-bold mb-1">Compare Loans</h2>
-      <p class="text-muted-foreground mb-6">Compare your loan options side-by-side to find the best fit.</p>
+  <div class="overflow-auto border rounded-xl shadow-sm bg-white dark:bg-zinc-900">
+    <Table>
+      <TableHeader>
+        <TableRow class="bg-zinc-100 dark:bg-zinc-800">
+          <TableHead class="w-48 font-semibold">รายการเปรียบเทียบ</TableHead>
+          <TableHead v-for="loan in loans" :key="loan.id" class="text-center font-semibold"> สินเชื่อ {{ loan.id }} </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <!-- วงเงิน -->
+        <TableRow>
+          <TableCell>วงเงิน</TableCell>
+          <TableCell v-for="loan in loans" :key="loan.id" class="text-right">
+            {{ loan.form.amount.toLocaleString() }}
+          </TableCell>
+        </TableRow>
 
-      <div class="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Loan Details</TableHead>
-              <TableHead v-for="loan in loans" :key="loan.name">{{ loan.name }}</TableHead>
-            </TableRow>
-          </TableHeader>
+        <!-- ดอกเบี้ย -->
+        <TableRow>
+          <TableCell>ดอกเบี้ย/ปี</TableCell>
+          <TableCell v-for="loan in loans" :key="loan.id" class="text-right" :class="getHighlightClass(loan.form.interestRate, minRate, maxRate)">
+            {{ loan.form.interestRate }}%
+          </TableCell>
+        </TableRow>
 
-          <TableBody>
-            <TableRow v-for="field in fields" :key="field.key">
-              <TableCell class="font-medium">{{ field.label }}</TableCell>
-              <TableCell v-for="loan in loans" :key="loan.name">
-                <span :class="field.key === 'highlight' ? 'text-green-600' : ''">
-                  {{ loan[field.key] }}
-                </span>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
-    </CardContent>
-  </Card>
+        <!-- งวด/เดือน -->
+        <TableRow>
+          <TableCell>งวด/เดือน</TableCell>
+          <TableCell v-for="loan in loans" :key="loan.id" class="text-right">
+            {{ loan.form.termYears * 12 + loan.form.termMonths }}
+          </TableCell>
+        </TableRow>
+
+        <!-- ยอดผ่อน/เดือน -->
+        <TableRow>
+          <TableCell>ยอดผ่อน/เดือน</TableCell>
+          <TableCell
+            v-for="loan in loans"
+            :key="loan.id"
+            class="text-right"
+            :class="getHighlightClass(loan.form.monthlyPayment, minMonthly, maxMonthly)"
+          >
+            {{ loan.form.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}
+          </TableCell>
+        </TableRow>
+
+        <!-- ดอกเบี้ยรวม -->
+        <TableRow>
+          <TableCell>ดอกเบี้ยรวม</TableCell>
+          <TableCell v-for="loan in loans" :key="loan.id" class="text-right">
+            {{ loan.form.totalInterest.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}
+          </TableCell>
+        </TableRow>
+
+        <!-- ยอดชำระรวม -->
+        <TableRow>
+          <TableCell>ยอดชำระรวม</TableCell>
+          <TableCell
+            v-for="loan in loans"
+            :key="loan.id"
+            class="text-right"
+            :class="getHighlightClass(loan.form.totalPayment, minTotalPayment, maxTotalPayment)"
+          >
+            {{ loan.form.totalPayment.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
+  </div>
 </template>

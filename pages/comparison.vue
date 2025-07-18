@@ -1,35 +1,35 @@
 <script setup lang="ts">
-import CompareTable from "~/components/loan/CompareTable.vue";
+import CompareTable from "@/components/loan/CompareTable.vue";
+import { onMounted, reactive } from "vue";
+import { useLoanCalculator } from "@/composables/useLoanCalculator";
 
-const loanList = [
-  {
-    name: "Loan A",
-    interestRate: "5.5%",
-    term: "30 years",
-    monthlyPayment: "$1,500",
-    totalInterest: "$200,000",
-    type: "Fixed",
-    highlight: "Lower interest rate",
-  },
-  {
-    name: "Loan B",
-    interestRate: "6.0%",
-    term: "20 years",
-    monthlyPayment: "$2,000",
-    totalInterest: "$150,000",
-    type: "Adjustable",
-    highlight: "Shorter term, lower total interest",
-  },
-  {
-    name: "Loan C",
-    interestRate: "4.8%",
-    term: "25 years",
-    monthlyPayment: "$1,700",
-    totalInterest: "$180,000",
-    type: "Fixed",
-    highlight: "Lowest monthly payment",
-  },
-];
+const loanList: {
+  id: number;
+  form: any;
+}[] = reactive([]);
+
+onMounted(() => {
+  if (typeof window !== "undefined") {
+    const saved = JSON.parse(localStorage.getItem("loan-forms") || "[]");
+
+    for (const item of saved) {
+      const form = reactive({ ...item.form });
+
+      const calc = useLoanCalculator(form, item.id);
+      calc.calculate();
+
+      loanList.push({
+        id: item.id,
+        form: {
+          ...form,
+          monthlyPayment: calc.result.monthlyPayment,
+          totalInterest: calc.result.totalInterest,
+          totalPayment: calc.result.totalPayment,
+        },
+      });
+    }
+  }
+});
 </script>
 
 <template>
