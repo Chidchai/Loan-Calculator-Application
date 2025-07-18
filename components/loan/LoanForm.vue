@@ -4,24 +4,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useLoanCalculator } from "@/composables/useLoanCalculator";
+import type { LoanForm, Summary } from "@/types/loan";
 
-const emit = defineEmits(["update:summary"]);
-const props = defineProps<{ formName?: string; formId: number }>();
+const emit = defineEmits<{
+  (e: "update:summary", value: Summary): void;
+}>();
 
-const form = reactive({
-  amount: 0,
-  interestRate: 0,
-  termYears: 0,
-  termMonths: 0,
-  startDate: "",
-});
+const props = defineProps<{
+  form: LoanForm;
+  formId: number;
+  formName?: string;
+}>();
+
+const form = props.form;
 
 const { result, pieChartData, lineChartData, barChartData, amortizationSchedule } = useLoanCalculator(form, props.formId);
 
 watch(
   result,
   () => {
-    emit("update:summary", { ...result, pieChartData, lineChartData, barChartData, amortizationSchedule });
+    emit("update:summary", {
+      monthlyPayment: result.monthlyPayment,
+      totalInterest: result.totalInterest,
+      totalPayment: result.totalPayment,
+      amortizationSchedule,
+      pieChartData: pieChartData.value,
+      lineChartData: lineChartData.value,
+      barChartData: barChartData.value,
+    });
   },
   { immediate: true }
 );

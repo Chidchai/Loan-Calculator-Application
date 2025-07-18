@@ -1,127 +1,77 @@
 <script setup lang="ts">
-import { ref, reactive, computed } from "vue";
+import { ref, computed } from "vue";
+import { useLoanStore } from "@/stores/useLoanStore";
+import { useLoanCalculator } from "@/composables/useLoanCalculator";
+
 import LoanForm from "@/components/loan/LoanForm.vue";
-import DataVisualization from "@/components/loan/DataVisualization.vue";
 import LoanSummary from "@/components/loan/LoanSummary.vue";
+import DataVisualization from "@/components/loan/DataVisualization.vue";
 import LoanAmortizationTable from "@/components/loan/LoanAmortizationTable.vue";
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import type { Summary } from "@/types/loan";
 
-// ฟอร์มสินเชื่อ
-const forms = ref([
-  {
-    id: 1,
-    form: reactive({
-      amount: 0,
-      interestRate: 0,
-      termYears: 0,
-      termMonths: 0,
-      startDate: "",
-    }),
-  },
-]);
+const store = useLoanStore();
 
-// เก็บ calculator ที่เกี่ยวข้องกับแต่ละฟอร์ม
-const calculators = reactive<Record<number, ReturnType<typeof useLoanCalculator>>>({});
-
-// เก็บ summary แต่ละฟอร์ม
-const summaries = reactive<Record<number, Summary>>({});
-
-// Active tab
-const activeTab = ref("form-1");
+const activeTab = ref(`form-${store.forms[0]?.id ?? 1}`);
 const activeFormId = computed(() => {
   const id = parseInt(activeTab.value.replace("form-", ""));
-  return isNaN(id) ? 1 : id;
+  return isNaN(id) ? store.forms[0]?.id ?? 1 : id;
 });
 
-// สร้าง calculator เบื้องต้น
-forms.value.forEach((f) => {
-  calculators[f.id] = useLoanCalculator(f.form, f.id);
+// calculators ที่ผูกกับแต่ละ form
+const calculators = computed(() => {
+  const result: Record<number, ReturnType<typeof useLoanCalculator>> = {};
+  for (const f of store.forms) {
+    result[f.id] = useLoanCalculator(f.form, f.id);
+  }
+  return result;
+});
+
+// summary ต่อ form
+const summaries = computed<Record<number, Summary>>(() => {
+  const result: Record<number, Summary> = {};
+  for (const f of store.forms) {
+    const c = calculators.value[f.id];
+    result[f.id] = {
+      monthlyPayment: c.result.monthlyPayment,
+      totalInterest: c.result.totalInterest,
+      totalPayment: c.result.totalPayment,
+      amortizationSchedule: c.amortizationSchedule,
+      pieChartData: c.pieChartData.value,
+      lineChartData: c.lineChartData.value,
+      barChartData: c.barChartData.value,
+    };
+  }
+  return result;
 });
 
 // เพิ่มฟอร์มใหม่
 function addForm() {
-  const nextId = forms.value.length ? Math.max(...forms.value.map((f) => f.id)) + 1 : 1;
-  const newForm = {
-    id: nextId,
-    form: reactive({
+  const nextId = store.forms.length ? Math.max(...store.forms.map((f) => f.id)) + 1 : 1;
+  store.addForm(
+    {
       amount: 0,
       interestRate: 0,
       termYears: 0,
       termMonths: 0,
       startDate: "",
-    }),
-  };
-  forms.value.push(newForm);
-  calculators[nextId] = useLoanCalculator(newForm.form, newForm.id);
+    },
+    nextId
+  );
   activeTab.value = `form-${nextId}`;
 }
 
 // ลบฟอร์ม
-function removeForm(id: number) {
-  const index = forms.value.findIndex((f) => f.id === id);
-  if (index !== -1) {
-    forms.value.splice(index, 1);
-    delete calculators[id];
-    delete summaries[id];
-
-    // อัปเดต localStorage loan-forms
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("loan-forms");
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved) as { id: number; form: any }[];
-          const updated = parsed.filter((f) => f.id !== id);
-
-          if (updated.length > 0) {
-            localStorage.setItem("loan-forms", JSON.stringify(updated));
-          } else {
-            localStorage.removeItem("loan-forms"); // ถ้าไม่มีเหลือ ให้ลบทิ้งเลย
-          }
-        } catch (e) {
-          console.error("Failed to update localStorage on form remove", e);
-        }
-      }
-    }
-
-    // ถ้า tab ที่ลบเป็น active tab → ย้ายไป tab แรก
-    if (activeFormId.value === id) {
-      const newActive = forms.value[0]?.id;
-      if (newActive) {
-        activeTab.value = `form-${newActive}`;
-      } else {
-        // ถ้าไม่มี form เหลือ สร้างใหม่
-        addForm();
-      }
-    }
+function handleRemove(id: number) {
+  store.removeForm(id);
+  if (activeFormId.value === id) {
+    const first = store.forms[0];
+    if (first) activeTab.value = `form-${first.id}`;
+    else addForm();
   }
 }
-
-// รับผลการคำนวณจาก LoanForm
-function updateSummary(id: number, summary: Summary) {
-  summaries[id] = summary;
-}
-
-onMounted(() => {
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("loan-forms");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
-        forms.value = parsed.map((f: any) => ({
-          id: f.id,
-          form: reactive(f.form),
-        }));
-        // สร้าง calculator สำหรับทุกฟอร์ม
-        for (const f of forms.value) {
-          calculators[f.id] = useLoanCalculator(f.form, f.id);
-        }
-        activeTab.value = `form-${forms.value[0].id}`;
-      }
-    }
-  }
-});
 </script>
 
 <template>
@@ -132,25 +82,23 @@ onMounted(() => {
     </div>
 
     <Tabs v-model="activeTab" class="w-full">
-      <!-- Tabs header -->
       <TabsList>
-        <TabsTrigger v-for="form in forms" :key="form.id" :value="`form-${form.id}`" class="flex items-center gap-2">
+        <TabsTrigger v-for="form in store.forms" :key="form.id" :value="`form-${form.id}`" class="flex items-center gap-2">
           สินเชื่อ {{ form.id }}
-          <button v-if="forms.length > 1" @click.stop="removeForm(form.id)" class="text-red-500 hover:text-red-700 text-xs">✕</button>
+          <button v-if="store.forms.length > 0" @click.stop="handleRemove(form.id)" class="text-red-500 hover:text-red-700 text-xs">✕</button>
         </TabsTrigger>
       </TabsList>
 
-      <!-- Tabs content -->
-      <TabsContent v-for="form in forms" :key="form.id" :value="`form-${form.id}`" class="pt-4">
-        <LoanForm :form="form.form" :formName="`สินเชื่อ ${form.id}`" :formId="form.id" @update:summary="(value) => updateSummary(form.id, value)" />
+      <TabsContent v-for="form in store.forms" :key="form.id" :value="`form-${form.id}`" class="pt-4">
+        <LazyLoanForm :form="form.form" :formName="`สินเชื่อ ${form.id}`" :formId="form.id" />
       </TabsContent>
     </Tabs>
 
-    <NuxtLink to="/comparison" variant="outline">
+    <NuxtLink to="/comparison">
       <Button variant="default">เปรียบเทียบสินเชื่อ</Button>
     </NuxtLink>
-    <!-- Summary & Charts -->
-    <LoanSummary
+
+    <LazyLoanSummary
       :summary="
         summaries[activeFormId] || {
           monthlyPayment: 0,
@@ -166,6 +114,6 @@ onMounted(() => {
       :lineData="summaries[activeFormId]?.lineChartData"
     />
 
-    <LoanAmortizationTable :schedule="summaries[activeFormId]?.amortizationSchedule || []" />
+    <LazyLoanAmortizationTable :schedule="summaries[activeFormId]?.amortizationSchedule || []" />
   </div>
 </template>

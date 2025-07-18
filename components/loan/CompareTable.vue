@@ -3,28 +3,27 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 
 const props = defineProps<{
   loans: {
+    amount: number;
+    interestRate: number;
+    termYears: number;
+    termMonths: number;
+    startDate?: string | undefined;
     id: number;
-    form: {
-      amount: number;
-      interestRate: number;
-      termYears: number;
-      termMonths: number;
-      monthlyPayment: number;
-      totalInterest: number;
-      totalPayment: number;
-    };
+    monthlyPayment: number;
+    totalInterest: number;
+    totalPayment: number;
   }[];
 }>();
 
 // ค่าต่ำสุด / สูงสุด
-const minRate = computed(() => Math.min(...props.loans.map((l) => l.form.interestRate)));
-const maxRate = computed(() => Math.max(...props.loans.map((l) => l.form.interestRate)));
+const minRate = computed(() => Math.min(...props.loans.map((l) => l.interestRate)));
+const maxRate = computed(() => Math.max(...props.loans.map((l) => l.interestRate)));
 
-const minMonthly = computed(() => Math.min(...props.loans.map((l) => l.form.monthlyPayment)));
-const maxMonthly = computed(() => Math.max(...props.loans.map((l) => l.form.monthlyPayment)));
+const minMonthly = computed(() => Math.min(...props.loans.map((l) => l.monthlyPayment)));
+const maxMonthly = computed(() => Math.max(...props.loans.map((l) => l.monthlyPayment)));
 
-const minTotalPayment = computed(() => Math.min(...props.loans.map((l) => l.form.totalPayment)));
-const maxTotalPayment = computed(() => Math.max(...props.loans.map((l) => l.form.totalPayment)));
+const minTotalPayment = computed(() => Math.min(...props.loans.map((l) => l.totalPayment)));
+const maxTotalPayment = computed(() => Math.max(...props.loans.map((l) => l.totalPayment)));
 
 function getHighlightClass(value: number, min: number, max: number) {
   if (Math.abs(value - min) < 0.01) return "text-green-600 font-bold";
@@ -34,6 +33,7 @@ function getHighlightClass(value: number, min: number, max: number) {
 </script>
 
 <template>
+  <h3 class="text-lg font-semibold mb-4">ตารางเปรียบเทียบ</h3>
   <div class="overflow-auto border rounded-xl shadow-sm bg-white dark:bg-zinc-900">
     <Table>
       <TableHeader>
@@ -47,15 +47,15 @@ function getHighlightClass(value: number, min: number, max: number) {
         <TableRow>
           <TableCell>วงเงิน</TableCell>
           <TableCell v-for="loan in loans" :key="loan.id" class="text-right">
-            {{ loan.form.amount.toLocaleString() }}
+            {{ loan.amount.toLocaleString() }}
           </TableCell>
         </TableRow>
 
         <!-- ดอกเบี้ย -->
         <TableRow>
           <TableCell>ดอกเบี้ย/ปี</TableCell>
-          <TableCell v-for="loan in loans" :key="loan.id" class="text-right" :class="getHighlightClass(loan.form.interestRate, minRate, maxRate)">
-            {{ loan.form.interestRate }}%
+          <TableCell v-for="loan in loans" :key="loan.id" class="text-right" :class="getHighlightClass(loan.interestRate, minRate, maxRate)">
+            {{ loan.interestRate }}%
           </TableCell>
         </TableRow>
 
@@ -63,20 +63,15 @@ function getHighlightClass(value: number, min: number, max: number) {
         <TableRow>
           <TableCell>งวด/เดือน</TableCell>
           <TableCell v-for="loan in loans" :key="loan.id" class="text-right">
-            {{ loan.form.termYears * 12 + loan.form.termMonths }}
+            {{ loan.termYears * 12 + loan.termMonths }}
           </TableCell>
         </TableRow>
 
         <!-- ยอดผ่อน/เดือน -->
         <TableRow>
           <TableCell>ยอดผ่อน/เดือน</TableCell>
-          <TableCell
-            v-for="loan in loans"
-            :key="loan.id"
-            class="text-right"
-            :class="getHighlightClass(loan.form.monthlyPayment, minMonthly, maxMonthly)"
-          >
-            {{ loan.form.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}
+          <TableCell v-for="loan in loans" :key="loan.id" class="text-right" :class="getHighlightClass(loan.monthlyPayment, minMonthly, maxMonthly)">
+            {{ loan.monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}
           </TableCell>
         </TableRow>
 
@@ -84,7 +79,7 @@ function getHighlightClass(value: number, min: number, max: number) {
         <TableRow>
           <TableCell>ดอกเบี้ยรวม</TableCell>
           <TableCell v-for="loan in loans" :key="loan.id" class="text-right">
-            {{ loan.form.totalInterest.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}
+            {{ loan.totalInterest.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}
           </TableCell>
         </TableRow>
 
@@ -95,9 +90,9 @@ function getHighlightClass(value: number, min: number, max: number) {
             v-for="loan in loans"
             :key="loan.id"
             class="text-right"
-            :class="getHighlightClass(loan.form.totalPayment, minTotalPayment, maxTotalPayment)"
+            :class="getHighlightClass(loan.totalPayment, minTotalPayment, maxTotalPayment)"
           >
-            {{ loan.form.totalPayment.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}
+            {{ loan.totalPayment.toLocaleString(undefined, { maximumFractionDigits: 2 }) }}
           </TableCell>
         </TableRow>
       </TableBody>

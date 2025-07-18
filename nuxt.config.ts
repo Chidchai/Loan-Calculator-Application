@@ -7,7 +7,7 @@ export default defineNuxtConfig({
     port: 8080,
   },
 
-  modules: ['@nuxt/eslint', '@nuxt/fonts', '@nuxt/icon', '@nuxt/ui', '@nuxt/test-utils', 'shadcn-nuxt'],
+  modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/fonts', '@nuxt/icon', '@nuxt/ui', '@nuxt/test-utils', 'shadcn-nuxt',],
   css: ['~/assets/css/tailwind.css'],
   vite: {
     plugins: [tailwindcss()],

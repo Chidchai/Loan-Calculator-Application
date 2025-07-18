@@ -1,5 +1,6 @@
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4 pt-4">
+    <h3 class="text-lg font-semibold mb-4">ตารางแสดงรายละเอียดการผ่อนชำระ (Amortization Schedule)</h3>
     <div class="overflow-x-auto rounded-xl border">
       <Table>
         <TableHeader>
@@ -52,7 +53,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { Button } from "@/components/ui/button";
-import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead, TableCaption } from "@/components/ui/table";
 import { Pagination, PaginationNext, PaginationContent, PaginationPrevious, PaginationEllipsis, PaginationItem } from "@/components/ui/pagination";
 // import jsPDF from "jspdf";
 // import autoTable from "jspdf-autotable";

@@ -1,4 +1,15 @@
-// types/loan.ts
+export type LoanForm = {
+    amount: number;
+    interestRate: number;
+    termYears: number;
+    termMonths: number;
+    startDate?: string;
+};
+
+export type FormEntry = {
+    id: number;
+    form: LoanForm;
+};
 
 export type PieChartData = {
     labels: string[];

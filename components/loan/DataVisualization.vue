@@ -19,7 +19,7 @@ const props = defineProps<{
     <Card class="border rounded-xl shadow-sm">
       <CardHeader class="bg-muted px-4 py-3 border-b">
         <div class="flex items-center gap-2">
-          <BarChart class="w-5 h-5 text-orange-500" />
+          <BarChart v-if="barData?.labels" :data="barData" />
           <div>
             <CardTitle class="text-base font-semibold text-primary">ดอกเบี้ยรายปี</CardTitle>
             <CardDescription class="text-sm text-muted-foreground">รวมดอกเบี้ยในแต่ละปี</CardDescription>
@@ -35,7 +35,7 @@ const props = defineProps<{
     <Card class="border rounded-xl shadow-sm">
       <CardHeader class="bg-muted px-4 py-3 border-b">
         <CardTitle class="flex items-center gap-2 text-base font-semibold text-primary">
-          <PieChart class="w-5 h-5 text-pink-500" />
+          <PieChart v-if="pieData?.labels" :data="pieData" />
           สัดส่วนเงินต้น-ดอกเบี้ย
         </CardTitle>
         <CardDescription class="text-sm text-muted-foreground"> เปรียบเทียบสัดส่วนค่าใช้จ่าย </CardDescription>

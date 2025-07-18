@@ -1,32 +1,45 @@
 <script setup lang="ts">
 import CompareTable from "@/components/loan/CompareTable.vue";
-import { onMounted, reactive } from "vue";
+import { onMounted, ref, reactive } from "vue";
 import { useLoanCalculator } from "@/composables/useLoanCalculator";
+import type { LoanForm, Summary } from "@/types/loan";
 
-const loanList: {
+type LoanSummaryItem = LoanForm & {
   id: number;
-  form: any;
-}[] = reactive([]);
+  monthlyPayment: number;
+  totalInterest: number;
+  totalPayment: number;
+};
+
+const loanList = ref<LoanSummaryItem[]>([]);
+const store = useLoanStore();
 
 onMounted(() => {
   if (typeof window !== "undefined") {
-    const saved = JSON.parse(localStorage.getItem("loan-forms") || "[]");
+    try {
+      const saved = store.forms || [];
 
-    for (const item of saved) {
-      const form = reactive({ ...item.form });
+      if (Array.isArray(saved)) {
+        for (const item of saved) {
+          const form = reactive<LoanForm>({ ...item.form });
+          const calc = useLoanCalculator(form, item.id);
+          calc.calculate();
 
-      const calc = useLoanCalculator(form, item.id);
-      calc.calculate();
-
-      loanList.push({
-        id: item.id,
-        form: {
-          ...form,
-          monthlyPayment: calc.result.monthlyPayment,
-          totalInterest: calc.result.totalInterest,
-          totalPayment: calc.result.totalPayment,
-        },
-      });
+          loanList.value.push({
+            id: item.id,
+            amount: form.amount,
+            interestRate: form.interestRate,
+            termYears: form.termYears,
+            termMonths: form.termMonths,
+            startDate: form.startDate,
+            monthlyPayment: calc.result.monthlyPayment,
+            totalInterest: calc.result.totalInterest,
+            totalPayment: calc.result.totalPayment,
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Error loading loan data:", e);
     }
   }
 });
