@@ -5,44 +5,69 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast as sonnerToast } from "vue-sonner";
 
-const props = defineProps<{
-  class?: HTMLAttributes["class"];
-}>();
+import { ref } from "vue";
+const email = ref("");
+const password = ref("");
+const loading = ref(false);
+const { supabase } = useAuth();
+const handleLogin = async () => {
+  loading.value = true;
+  try {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.value,
+      password: password.value,
+    });
+
+    if (error) {
+      console.log(error);
+      sonnerToast.error("เข้าสู่ระบบล้มเหลว" + `${error}`, { description: error });
+      return;
+    }
+
+    sonnerToast.success("เข้าสู่ระบบสำเร็จ");
+    await navigateTo("/");
+  } catch (error) {
+    console.log(error);
+    sonnerToast.error("เข้าสู่ระบบล้มเหลว " + `${error}`, { description: `${error}` });
+  } finally {
+    loading.value = false;
+  }
+};
 </script>
 
 <template>
-  <div :class="cn('flex flex-col gap-6', props.class)">
-    <Card>
-      <CardHeader>
-        <CardTitle>Login to your account</CardTitle>
-        <CardDescription> Enter your email below to login to your account </CardDescription>
-      </CardHeader>
+  <Card class="mx-auto max-w-xl">
+    <CardHeader>
+      <CardTitle class="text-2xl"> Login </CardTitle>
+    </CardHeader>
+    <form @submit.prevent="handleLogin">
       <CardContent>
-        <form>
-          <div class="flex flex-col gap-6">
-            <div class="grid gap-3">
-              <Label for="email">Email</Label>
-              <Input id="email" type="email" placeholder="m@example.com" required />
-            </div>
-            <div class="grid gap-3">
-              <div class="flex items-center">
-                <Label for="password">Password</Label>
-                <a href="#" class="ml-auto inline-block text-sm underline-offset-4 hover:underline"> Forgot your password? </a>
-              </div>
-              <Input id="password" type="password" required />
-            </div>
-            <div class="flex flex-col gap-3">
-              <Button type="submit" class="w-full"> Login </Button>
-              <Button variant="outline" class="w-full"> Login with Google </Button>
-            </div>
+        <div class="grid gap-4">
+          <div class="grid gap-2">
+            <Label for="email">Email</Label>
+            <Input id="email" type="email" v-model="email" placeholder="m@example.com" required />
           </div>
-          <div class="mt-4 text-center text-sm">
-            Don't have an account?
-            <a href="#" class="underline underline-offset-4"> Sign up </a>
+          <div class="grid gap-2">
+            <Input id="password" type="password" v-model="password" required />
           </div>
-        </form>
+          <Button type="submit" class="w-full" :disabled="loading">
+            <template v-if="loading">
+              <svg class="mr-2 h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+              Logging in...
+            </template>
+            <template v-else> Login </template>
+          </Button>
+        </div>
+        <div class="mt-4 text-center text-sm">
+          Don't have an account?
+          <NuxtLink to="/register" class="underline underline-offset-4"> Sign up </NuxtLink>
+        </div>
       </CardContent>
-    </Card>
-  </div>
+    </form>
+  </Card>
 </template>

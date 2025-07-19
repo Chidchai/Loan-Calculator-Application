@@ -1,6 +1,7 @@
-<!-- app.vue -->
 <template>
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
+  <ColorScheme>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </ColorScheme>
 </template>
