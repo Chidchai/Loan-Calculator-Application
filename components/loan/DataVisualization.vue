@@ -15,7 +15,6 @@ const props = defineProps<{
 
 <template>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <!-- Bar Chart -->
     <Card class="border rounded-xl shadow-sm">
       <CardHeader class="bg-muted px-4 py-3 border-b">
         <div class="flex items-center gap-2">
@@ -31,7 +30,6 @@ const props = defineProps<{
       </CardContent>
     </Card>
 
-    <!-- Pie Chart -->
     <Card class="border rounded-xl shadow-sm">
       <CardHeader class="bg-muted px-4 py-3 border-b">
         <CardTitle class="flex items-center gap-2 text-base font-semibold text-primary">
@@ -45,7 +43,6 @@ const props = defineProps<{
       </CardContent>
     </Card>
 
-    <!-- Line Chart -->
     <Card class="border rounded-xl shadow-sm">
       <CardHeader class="bg-muted px-4 py-3 border-b">
         <div class="flex items-center gap-2">

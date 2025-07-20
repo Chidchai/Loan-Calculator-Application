@@ -43,7 +43,6 @@ function getHighlightClass(value: number, min: number, max: number) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        <!-- วงเงิน -->
         <TableRow>
           <TableCell>วงเงิน</TableCell>
           <TableCell v-for="loan in loans" :key="loan.id" class="text-right">
@@ -51,7 +50,6 @@ function getHighlightClass(value: number, min: number, max: number) {
           </TableCell>
         </TableRow>
 
-        <!-- ดอกเบี้ย -->
         <TableRow>
           <TableCell>ดอกเบี้ย/ปี</TableCell>
           <TableCell v-for="loan in loans" :key="loan.id" class="text-right" :class="getHighlightClass(loan.interestRate, minRate, maxRate)">
@@ -59,7 +57,6 @@ function getHighlightClass(value: number, min: number, max: number) {
           </TableCell>
         </TableRow>
 
-        <!-- งวด/เดือน -->
         <TableRow>
           <TableCell>งวด/เดือน</TableCell>
           <TableCell v-for="loan in loans" :key="loan.id" class="text-right">
@@ -67,7 +64,6 @@ function getHighlightClass(value: number, min: number, max: number) {
           </TableCell>
         </TableRow>
 
-        <!-- ยอดผ่อน/เดือน -->
         <TableRow>
           <TableCell>ยอดผ่อน/เดือน</TableCell>
           <TableCell v-for="loan in loans" :key="loan.id" class="text-right" :class="getHighlightClass(loan.monthlyPayment, minMonthly, maxMonthly)">
@@ -75,7 +71,6 @@ function getHighlightClass(value: number, min: number, max: number) {
           </TableCell>
         </TableRow>
 
-        <!-- ดอกเบี้ยรวม -->
         <TableRow>
           <TableCell>ดอกเบี้ยรวม</TableCell>
           <TableCell v-for="loan in loans" :key="loan.id" class="text-right">
@@ -83,7 +78,6 @@ function getHighlightClass(value: number, min: number, max: number) {
           </TableCell>
         </TableRow>
 
-        <!-- ยอดชำระรวม -->
         <TableRow>
           <TableCell>ยอดชำระรวม</TableCell>
           <TableCell

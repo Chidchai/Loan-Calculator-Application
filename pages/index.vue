@@ -1,7 +1,6 @@
 <template>
   <section class="w-full py-16">
     <div class="max-w-6xl mx-auto px-4 text-center space-y-10">
-      <!-- Hero Section -->
       <div>
         <h1 class="text-4xl font-bold tracking-tight">เปรียบเทียบสินเชื่อได้ง่ายๆ ในไม่กี่คลิก</h1>
         <p class="text-gray-500 mt-4 max-w-xl mx-auto">ระบบช่วยคำนวณและเปรียบเทียบสินเชื่ออย่างละเอียด พร้อมตารางและกราฟแบบมืออาชีพ</p>
@@ -15,7 +14,6 @@
         </div>
       </div>
 
-      <!-- Feature Highlights -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
         <Card>
           <CardHeader>
